@@ -13,6 +13,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JCodeRouteImport } from './routes/j.$code'
 import { Route as EventsNewRouteImport } from './routes/events.new'
 import { Route as EventsJoinRouteImport } from './routes/events.join'
 import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
@@ -35,6 +36,11 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JCodeRoute = JCodeRouteImport.update({
+  id: '/j/$code',
+  path: '/j/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsNewRoute = EventsNewRouteImport.update({
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
+  '/j/$code': typeof JCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
+  '/j/$code': typeof JCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
+  '/j/$code': typeof JCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/events/join'
     | '/events/new'
+    | '/j/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/events/join'
     | '/events/new'
+    | '/j/$code'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/events/join'
     | '/events/new'
+    | '/j/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   EventsEventIdRoute: typeof EventsEventIdRoute
   EventsJoinRoute: typeof EventsJoinRoute
   EventsNewRoute: typeof EventsNewRoute
+  JCodeRoute: typeof JCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -149,6 +162,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/j/$code': {
+      id: '/j/$code'
+      path: '/j/$code'
+      fullPath: '/j/$code'
+      preLoaderRoute: typeof JCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events/new': {
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsEventIdRoute: EventsEventIdRoute,
   EventsJoinRoute: EventsJoinRoute,
   EventsNewRoute: EventsNewRoute,
+  JCodeRoute: JCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
