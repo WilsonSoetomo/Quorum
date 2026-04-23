@@ -1,1 +1,7 @@
 project_id = "taxgcpumcrsxaunbatdy"
+
+[functions.score-applicants]
+verify_jwt = true
+
+[functions.notify-applicant]
+verify_jwt = true
