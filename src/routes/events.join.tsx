@@ -39,15 +39,16 @@ type FoundEvent = {
 function JoinEventPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
-  const [code, setCode] = useState("");
+  const search = useSearch({ from: "/events/join" });
+  const [code, setCode] = useState((search.code ?? "").toUpperCase());
   const [event, setEvent] = useState<FoundEvent | null>(null);
   const [busy, setBusy] = useState(false);
+  const autoLookupDone = useRef(false);
 
-  const handleLookup = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const lookup = async (rawCode: string) => {
     setBusy(true);
     setEvent(null);
-    const normalized = code.trim().toUpperCase();
+    const normalized = rawCode.trim().toUpperCase();
     if (normalized.length !== 6) {
       toast.error("Codes are 6 characters.");
       setBusy(false);
@@ -63,7 +64,7 @@ function JoinEventPage() {
       .maybeSingle();
 
     if (error || !data) {
-      toast.error("No event found with that code.");
+      toast.error("No list found with that code.");
       setBusy(false);
       return;
     }
@@ -75,6 +76,21 @@ function JoinEventPage() {
     setEvent(data as unknown as FoundEvent);
     setBusy(false);
   };
+
+  const handleLookup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await lookup(code);
+  };
+
+  // Auto-lookup when arriving via a shared link (?code=ABC123)
+  useEffect(() => {
+    if (autoLookupDone.current) return;
+    if (search.code && search.code.length === 6) {
+      autoLookupDone.current = true;
+      lookup(search.code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.code]);
 
   const handleApply = async () => {
     if (!event || !profile) return;
