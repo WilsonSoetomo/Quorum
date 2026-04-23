@@ -7,7 +7,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <p className="text-gold tracking-[0.3em] text-xs uppercase mb-4">Prio</p>
+        <p className="text-gold tracking-[0.3em] text-xs uppercase mb-4">Quorum</p>
         <h1 className="text-7xl font-serif text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-serif text-foreground">Page not found</h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -31,16 +31,16 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Prio — Invite the right people" },
+      { title: "Quorum — Simple queue management" },
       {
         name: "description",
         content:
-          "Prio helps hosts curate guest lists for golf, poker, dinners, tennis, and other events. Score applicants by fit, not first-come-first-served.",
+          "Quorum is a simple way for organizers to run sign-ups and waitlists. Share a code, collect requests, keep your list in order.",
       },
-      { property: "og:title", content: "Prio — Invite the right people" },
+      { property: "og:title", content: "Quorum — Simple queue management" },
       {
         property: "og:description",
-        content: "AI-powered guest curation for hosts who care about who's in the room.",
+        content: "Manage sign-ups and waitlists for any event with a six-character code.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

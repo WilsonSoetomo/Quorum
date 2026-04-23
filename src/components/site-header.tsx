@@ -9,7 +9,7 @@ export function SiteHeader() {
     <header className="border-b border-border bg-background/80 backdrop-blur sticky top-0 z-40">
       <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-serif text-2xl tracking-tight">Prio</span>
+          <span className="font-serif text-2xl tracking-tight">Quorum</span>
           <span className="hidden sm:inline-block w-1 h-1 rounded-full bg-gold" />
         </Link>
         <nav className="flex items-center gap-2">
