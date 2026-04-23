@@ -3,6 +3,14 @@ export type EventType = (typeof EVENT_TYPES)[number];
 
 export type ApplicationStatus = "pending" | "approved" | "waitlisted" | "declined";
 
+// Public-facing labels — keep DB values neutral, surface gentle queue language.
+export const STATUS_LABELS: Record<ApplicationStatus, string> = {
+  pending: "On the list",
+  approved: "Confirmed",
+  waitlisted: "Standby",
+  declined: "Removed",
+};
+
 export function generateJoinCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no ambiguous chars
   let out = "";

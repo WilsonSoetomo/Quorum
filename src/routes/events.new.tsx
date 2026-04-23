@@ -65,7 +65,7 @@ function NewEventPage() {
         .single();
 
       if (!error && data) {
-        toast.success("Event created.");
+        toast.success("List created.");
         navigate({ to: "/events/$eventId", params: { eventId: data.id } });
         return;
       }
@@ -81,19 +81,19 @@ function NewEventPage() {
 
   return (
     <main className="max-w-2xl mx-auto px-6 py-10">
-      <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">New event</p>
-      <h1 className="font-serif text-4xl mb-8">Set the scene</h1>
+      <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">New list</p>
+      <h1 className="font-serif text-4xl mb-8">The details</h1>
 
       <Card className="p-8 shadow-elegant">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <Label htmlFor="name">Event name</Label>
+            <Label htmlFor="name">List name</Label>
             <Input
               id="name"
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Saturday Golf at Pelican Hill"
+              placeholder="Saturday Golf — Pelican Hill"
             />
           </div>
 
@@ -150,31 +150,31 @@ function NewEventPage() {
           </div>
 
           <div>
-            <Label htmlFor="description">Description / vibe notes</Label>
+            <Label htmlFor="description">Notes</Label>
             <Textarea
               id="description"
               rows={4}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Looking for competitive players, good energy, no beginners. Stakes are friendly but real."
+              placeholder="Anything good to know — skill level, dress code, what to bring."
             />
             <p className="text-xs text-muted-foreground mt-1.5">
-              The AI uses this to score applicants for fit.
+              Used to help Smart Sort prioritize your queue.
             </p>
           </div>
 
           <div className="flex items-center justify-between rounded-md border border-border p-4">
             <div>
-              <p className="font-medium text-sm">Private event</p>
+              <p className="font-medium text-sm">Private list</p>
               <p className="text-xs text-muted-foreground">
-                Hide from public discovery — only joinable with the code.
+                Hide from public view — only joinable with the code.
               </p>
             </div>
             <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
           </div>
 
           <Button type="submit" variant="gold" className="w-full" disabled={busy} size="lg">
-            {busy ? "Creating…" : "Create event"}
+            {busy ? "Creating…" : "Create list"}
           </Button>
         </form>
       </Card>

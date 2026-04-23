@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatEventDate, statusColor, ApplicationStatus } from "@/lib/event-utils";
+import { formatEventDate, statusColor, STATUS_LABELS, ApplicationStatus } from "@/lib/event-utils";
 import { Plus, KeyRound, Calendar, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -97,7 +97,7 @@ function Dashboard() {
         <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">
           Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
         </p>
-        <h1 className="font-serif text-4xl">Your gatherings</h1>
+        <h1 className="font-serif text-4xl">Your lists</h1>
       </div>
 
       {/* Two paths */}
@@ -105,25 +105,25 @@ function Dashboard() {
         <Link to="/events/new" className="group">
           <Card className="p-8 h-full bg-gradient-noir text-primary-foreground shadow-elegant hover:shadow-gold transition-shadow">
             <Plus className="w-8 h-8 text-gold mb-4" />
-            <h2 className="font-serif text-2xl mb-2">Create an event</h2>
+            <h2 className="font-serif text-2xl mb-2">Start a list</h2>
             <p className="text-sm opacity-80">
-              Host a curated gathering. Set the vibe, share a code, and curate applicants.
+              Set the details, share a code, and manage requests as they come in.
             </p>
           </Card>
         </Link>
         <Link to="/events/join" className="group">
           <Card className="p-8 h-full hover:border-gold transition-colors shadow-elegant">
             <KeyRound className="w-8 h-8 text-gold mb-4" />
-            <h2 className="font-serif text-2xl mb-2">Join an event</h2>
+            <h2 className="font-serif text-2xl mb-2">Join a list</h2>
             <p className="text-sm text-muted-foreground">
-              Enter a six-character code to apply for a spot at someone's event.
+              Enter a six-character code to add yourself to someone's queue.
             </p>
           </Card>
         </Link>
       </div>
 
       {/* Hosted events */}
-      <Section title="Events you're hosting" empty="You haven't created any events yet.">
+      <Section title="Lists you're managing" empty="You haven't started any lists yet.">
         {hosted.length > 0 && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {hosted.map((e) => (
@@ -153,7 +153,7 @@ function Dashboard() {
                   </div>
                   <div className="mt-4 pt-4 border-t border-border flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {e.approved_count}/{e.total_spots} approved
+                      {e.approved_count}/{e.total_spots} confirmed
                     </span>
                     <span className="font-mono text-gold tracking-wider">{e.join_code}</span>
                   </div>
@@ -165,7 +165,7 @@ function Dashboard() {
       </Section>
 
       {/* Applied events */}
-      <Section title="Events you've applied to" empty="You haven't applied to any events yet.">
+      <Section title="Lists you've joined" empty="You haven't joined any lists yet.">
         {applied.length > 0 && (
           <div className="space-y-2">
             {applied.map((a) => (
@@ -182,7 +182,7 @@ function Dashboard() {
                     a.status,
                   )}`}
                 >
-                  {a.status}
+                  {STATUS_LABELS[a.status]}
                 </span>
               </Card>
             ))}

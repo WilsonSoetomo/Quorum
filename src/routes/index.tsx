@@ -16,20 +16,20 @@ function Landing() {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/40 pointer-events-none" />
         <div className="relative max-w-5xl mx-auto px-6 pt-24 pb-32 text-center">
           <p className="text-gold tracking-[0.3em] text-xs uppercase mb-6 font-medium">
-            Curated Gatherings
+            Queue Management
           </p>
           <h1 className="font-serif text-5xl md:text-7xl leading-[1.05] mb-6">
-            Invite the right people,
+            A simpler way to
             <br />
-            <span className="italic text-gold">not just the first ones.</span>
+            <span className="italic text-gold">manage your list.</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
-            Prio is the host's tool for curating guest lists at golf, poker, dinners, tennis,
-            and other social events — scoring applicants by fit, not arrival time.
+            Quorum helps organizers run sign-ups and queues for any kind of get-together —
+            share a code, collect requests, and keep your list in order.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Button asChild variant="gold" size="lg">
-              <Link to="/auth">Create an event</Link>
+              <Link to="/auth">Start a list</Link>
             </Button>
             <Button asChild variant="outline" size="lg">
               <Link to="/auth">Join with a code</Link>
@@ -43,18 +43,18 @@ function Landing() {
         <div className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-3 gap-10">
           <Step
             n="01"
-            title="Host an event"
-            body="Set the vibe — golf, poker, dinner. Define spots and share a six-character join code."
+            title="Open a list"
+            body="Set the details — when, where, how many spots. Share a six-character code."
           />
           <Step
             n="02"
-            title="Receive applicants"
-            body="Guests apply to attend. Their bio and tags become part of the picture."
+            title="Collect requests"
+            body="People enter the code to join the queue. Their details stay neatly organized."
           />
           <Step
             n="03"
-            title="Curate with AI"
-            body="Run AI prioritization to score every applicant for fit. You make the final call."
+            title="Sort & confirm"
+            body="Use Smart Sort to order your queue, then confirm spots one tap at a time."
           />
         </div>
       </section>
@@ -62,9 +62,9 @@ function Landing() {
       {/* Footer */}
       <footer className="border-t border-border">
         <div className="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="font-serif text-xl">Prio</p>
+          <p className="font-serif text-xl">Quorum</p>
           <p className="text-xs text-muted-foreground tracking-wide">
-            Curated gatherings for the right rooms.
+            The simple way to manage a list.
           </p>
         </div>
       </footer>
