@@ -62,7 +62,7 @@ function JoinEventPage() {
       return;
     }
     if (data.status !== "open") {
-      toast.error("This event is closed.");
+      toast.error("This list is closed.");
       setBusy(false);
       return;
     }
@@ -80,20 +80,20 @@ function JoinEventPage() {
     });
     if (error) {
       if (error.message.includes("duplicate")) {
-        toast.error("You've already applied to this event.");
+        toast.error("You're already on this list.");
       } else {
         toast.error(error.message);
       }
       setBusy(false);
       return;
     }
-    toast.success("Your request has been submitted. The host will review applicants.");
+    toast.success("You're on the list. The organizer will be in touch.");
     navigate({ to: "/dashboard" });
   };
 
   return (
     <main className="max-w-xl mx-auto px-6 py-10">
-      <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">Join an event</p>
+      <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">Join a list</p>
       <h1 className="font-serif text-4xl mb-8">Enter your code</h1>
 
       <Card className="p-8 shadow-elegant">
@@ -110,7 +110,7 @@ function JoinEventPage() {
             />
           </div>
           <Button type="submit" variant="noir" className="w-full" disabled={busy}>
-            {busy ? "Looking up…" : "Look up event"}
+            {busy ? "Looking up…" : "Look up list"}
           </Button>
         </form>
 
@@ -130,7 +130,7 @@ function JoinEventPage() {
                 {event.location}
               </p>
               {event.host?.full_name && (
-                <p className="text-xs">Hosted by <span className="text-foreground">{event.host.full_name}</span></p>
+                <p className="text-xs">Organized by <span className="text-foreground">{event.host.full_name}</span></p>
               )}
             </div>
             {event.description && (
@@ -139,7 +139,7 @@ function JoinEventPage() {
               </p>
             )}
             <Button onClick={handleApply} variant="gold" className="w-full" disabled={busy}>
-              Request to join
+              Add me to the list
             </Button>
           </div>
         )}
