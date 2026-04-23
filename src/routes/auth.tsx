@@ -43,7 +43,7 @@ function AuthPage() {
           },
         });
         if (error) throw error;
-        toast.success("Welcome to Prio. Check your email to confirm.");
+        toast.success("Welcome to Quorum. Check your email to confirm.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -59,7 +59,7 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="px-6 py-6 border-b border-border">
-        <Link to="/" className="font-serif text-2xl">Prio</Link>
+        <Link to="/" className="font-serif text-2xl">Quorum</Link>
       </div>
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <Card className="w-full max-w-md p-8 shadow-elegant">
@@ -67,11 +67,11 @@ function AuthPage() {
             {mode === "signup" ? "Create your account" : "Welcome back"}
           </p>
           <h1 className="font-serif text-3xl mb-1">
-            {mode === "signup" ? "Join Prio" : "Sign in"}
+            {mode === "signup" ? "Create your account" : "Sign in"}
           </h1>
           <p className="text-sm text-muted-foreground mb-6">
             {mode === "signup"
-              ? "A few details so hosts know who you are."
+              ? "A few details to get your account set up."
               : "Pick up where you left off."}
           </p>
 
@@ -89,22 +89,22 @@ function AuthPage() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="bio">Short bio</Label>
+                  <Label htmlFor="bio">Short note about you</Label>
                   <Textarea
                     id="bio"
                     rows={2}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="scratch golfer, hedge fund partner"
+                    placeholder="A line or two organizers can see when you join their list."
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tags">Tags (comma-separated)</Label>
+                  <Label htmlFor="tags">Interests (comma-separated)</Label>
                   <Input
                     id="tags"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
-                    placeholder="competitive, social, big spender"
+                    placeholder="golf, poker, dinners"
                   />
                 </div>
               </>
@@ -137,7 +137,7 @@ function AuthPage() {
           </form>
 
           <p className="text-xs text-center mt-6 text-muted-foreground">
-            {mode === "signup" ? "Already have an account?" : "New to Prio?"}{" "}
+            {mode === "signup" ? "Already have an account?" : "New here?"}{" "}
             <button
               type="button"
               onClick={() => setMode(mode === "signup" ? "signin" : "signup")}

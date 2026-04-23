@@ -58,9 +58,9 @@ function ProfilePage() {
   return (
     <main className="max-w-xl mx-auto px-6 py-10">
       <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">Your profile</p>
-      <h1 className="font-serif text-4xl mb-2">How hosts see you</h1>
+      <h1 className="font-serif text-4xl mb-2">Your details</h1>
       <p className="text-sm text-muted-foreground mb-8">
-        Your bio and tags shape how the AI scores your fit for events.
+        Organizers can see this when you join one of their lists.
       </p>
 
       <Card className="p-8 shadow-elegant">
@@ -74,22 +74,22 @@ function ProfilePage() {
             />
           </div>
           <div>
-            <Label htmlFor="bio">Short bio</Label>
+            <Label htmlFor="bio">Short note</Label>
             <Textarea
               id="bio"
               rows={3}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
-              placeholder="scratch golfer, hedge fund partner"
+              placeholder="A line or two about you."
             />
           </div>
           <div>
-            <Label htmlFor="tags">Tags (comma-separated)</Label>
+            <Label htmlFor="tags">Interests (comma-separated)</Label>
             <Input
               id="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              placeholder="competitive, social, big spender"
+              placeholder="golf, poker, dinners"
             />
           </div>
           <Button type="submit" variant="gold" className="w-full" disabled={busy}>
