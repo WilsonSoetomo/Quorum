@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as EventsNewRouteImport } from './routes/events.new'
 import { Route as EventsJoinRouteImport } from './routes/events.join'
+import { Route as EventsEventIdRouteImport } from './routes/events.$eventId'
 
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
@@ -46,12 +47,18 @@ const EventsJoinRoute = EventsJoinRouteImport.update({
   path: '/events/join',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EventsEventIdRoute = EventsEventIdRouteImport.update({
+  id: '/events/$eventId',
+  path: '/events/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
+  '/events/$eventId': typeof EventsEventIdRoute
   '/events/join': typeof EventsJoinRoute
   '/events/new': typeof EventsNewRoute
 }
@@ -79,16 +88,25 @@ export interface FileRouteTypes {
     | '/auth'
     | '/dashboard'
     | '/profile'
+    | '/events/$eventId'
     | '/events/join'
     | '/events/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/profile' | '/events/join' | '/events/new'
+  to:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/profile'
+    | '/events/$eventId'
+    | '/events/join'
+    | '/events/new'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/dashboard'
     | '/profile'
+    | '/events/$eventId'
     | '/events/join'
     | '/events/new'
   fileRoutesById: FileRoutesById
@@ -98,6 +116,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   ProfileRoute: typeof ProfileRoute
+  EventsEventIdRoute: typeof EventsEventIdRoute
   EventsJoinRoute: typeof EventsJoinRoute
   EventsNewRoute: typeof EventsNewRoute
 }
@@ -146,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsJoinRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/events/$eventId': {
+      id: '/events/$eventId'
+      path: '/events/$eventId'
+      fullPath: '/events/$eventId'
+      preLoaderRoute: typeof EventsEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -154,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   ProfileRoute: ProfileRoute,
+  EventsEventIdRoute: EventsEventIdRoute,
   EventsJoinRoute: EventsJoinRoute,
   EventsNewRoute: EventsNewRoute,
 }
