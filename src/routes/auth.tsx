@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,10 +43,13 @@ function AuthPage() {
   const handleGoogle = async () => {
     setGoogleBusy(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth${
+      const result = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth${
           search.redirect ? `?redirect=${encodeURIComponent(search.redirect)}` : ""
-        }`,
+          }`,
+        },
       });
       if (result.error) {
         toast.error(result.error.message ?? "Google sign-in failed");
