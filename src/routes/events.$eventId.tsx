@@ -356,10 +356,18 @@ function EventDetail() {
               <button
                 onClick={copyCode}
                 className="font-mono text-2xl text-gold tracking-[0.25em] flex items-center gap-2 hover:opacity-80"
-                title="Click to copy"
+                title="Click to copy code"
               >
                 {event.join_code}
                 <Copy className="w-4 h-4" />
+              </button>
+              <button
+                onClick={copyLink}
+                className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground"
+                title="Copy a shareable link"
+              >
+                <Link2 className="w-3 h-3" />
+                Copy share link
               </button>
             </div>
             <div className="text-right">
