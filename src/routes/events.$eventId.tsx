@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import {
   formatEventDate,
   scoreColor,
+  STATUS_LABELS,
   ApplicationStatus,
 } from "@/lib/event-utils";
 import { toast } from "sonner";
@@ -160,7 +161,7 @@ function EventDetail() {
     let actual = next;
     if (next === "approved" && eventFull && target.status !== "approved") {
       actual = "waitlisted";
-      toast.info("Event is full — moved to waitlist instead.");
+      toast.info("List is full — moved to standby instead.");
     }
 
     const { error } = await supabase
@@ -171,7 +172,7 @@ function EventDetail() {
       toast.error(error.message);
       return;
     }
-    toast.success(`Marked as ${actual}`);
+    toast.success(`Marked as ${STATUS_LABELS[actual]}.`);
 
     if (notify && actual !== "pending") {
       await sendNotification(appId);
@@ -199,7 +200,7 @@ function EventDetail() {
         .update({ status: "approved" })
         .eq("id", nextUp.id);
       if (!error) {
-        toast.success("Promoted next applicant from the waitlist.");
+        toast.success("Promoted the next person from standby.");
         await sendNotification(nextUp.id);
       }
     }
@@ -225,10 +226,10 @@ function EventDetail() {
         body: { eventId },
       });
       if (error) throw error;
-      toast.success(`Scored ${data?.scored ?? 0} applicants.`);
+      toast.success(`Sorted ${data?.scored ?? 0} entries.`);
       await loadApps();
     } catch (e: any) {
-      toast.error(e?.message || "AI scoring failed");
+      toast.error(e?.message || "Smart Sort failed");
     } finally {
       setScoring(false);
     }
@@ -240,7 +241,7 @@ function EventDetail() {
       .sort((a, b) => (b.ai_score ?? -1) - (a.ai_score ?? -1))
       .slice(0, spotsLeft);
     if (candidates.length === 0) {
-      toast.info("No spots left or no eligible applicants.");
+      toast.info("No spots left or no one to confirm.");
       return;
     }
     let approved = 0;
@@ -254,13 +255,13 @@ function EventDetail() {
         sendNotification(c.id);
       }
     }
-    toast.success(`Approved top ${approved}.`);
+    toast.success(`Confirmed top ${approved}.`);
   };
 
   const notifyAllApproved = async () => {
     const approved = apps.filter((a) => a.status === "approved");
     if (approved.length === 0) {
-      toast.info("No approved applicants yet.");
+      toast.info("No one confirmed yet.");
       return;
     }
     let sent = 0;
@@ -282,7 +283,7 @@ function EventDetail() {
       .update({ status: next })
       .eq("id", eventId);
     if (error) toast.error(error.message);
-    else toast.success(`Event ${next}`);
+    else toast.success(`List ${next}`);
   };
 
   const visible =
@@ -356,7 +357,7 @@ function EventDetail() {
             </div>
             <div className="text-right">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
-                Approved
+                Confirmed
               </p>
               <p className="font-serif text-3xl">
                 {approvedCount}
@@ -380,7 +381,7 @@ function EventDetail() {
       {!isHost && (
         <Card className="p-6 mb-8 bg-secondary/40 border-dashed">
           <p className="text-sm text-muted-foreground">
-            You're viewing this event as a guest. The host manages applicants.
+            You're viewing this list as a guest. The organizer manages the queue.
           </p>
         </Card>
       )}
@@ -395,32 +396,32 @@ function EventDetail() {
               disabled={scoring || apps.length === 0}
             >
               <Sparkles className="w-4 h-4" />
-              {scoring ? "Scoring…" : "Run AI Prioritization"}
+              {scoring ? "Sorting…" : "Smart Sort"}
             </Button>
             <Button
               onClick={approveTopN}
               variant="noir"
               disabled={spotsLeft === 0 || apps.length === 0}
             >
-              Approve top {Math.min(spotsLeft, apps.filter((a) => a.status !== "approved" && a.status !== "declined").length)}
+              Confirm next {Math.min(spotsLeft, apps.filter((a) => a.status !== "approved" && a.status !== "declined").length)}
             </Button>
             <Button onClick={notifyAllApproved} variant="outline">
               <Mail className="w-4 h-4" />
-              Notify all approved
+              Notify confirmed
             </Button>
           </div>
 
           {/* Tabs */}
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
             <TabsList>
-              <TabsTrigger value="all">All requests ({apps.length})</TabsTrigger>
-              <TabsTrigger value="approved">Approved ({approvedCount})</TabsTrigger>
-              <TabsTrigger value="waitlist">Waitlist ({waitlistCount})</TabsTrigger>
+              <TabsTrigger value="all">Everyone ({apps.length})</TabsTrigger>
+              <TabsTrigger value="approved">Confirmed ({approvedCount})</TabsTrigger>
+              <TabsTrigger value="waitlist">Standby ({waitlistCount})</TabsTrigger>
             </TabsList>
             <TabsContent value={tab} className="mt-6">
               {visible.length === 0 ? (
                 <p className="text-center text-sm text-muted-foreground py-12 italic">
-                  No applicants here yet.
+                  No one here yet.
                 </p>
               ) : (
                 <div className="space-y-3">
@@ -491,7 +492,7 @@ function ApplicantCard({
           <div className="w-32">
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
-                AI Score
+                Priority
               </span>
               <span className="font-serif text-2xl">{app.ai_score}</span>
             </div>
@@ -507,13 +508,13 @@ function ApplicantCard({
         {/* Actions */}
         <div className="flex flex-col gap-1.5">
           <Button size="sm" variant="gold" onClick={onApprove} disabled={app.status === "approved"}>
-            <Check className="w-3.5 h-3.5" /> Approve
+            <Check className="w-3.5 h-3.5" /> Confirm
           </Button>
           <Button size="sm" variant="outline" onClick={onWaitlist} disabled={app.status === "waitlisted"}>
-            <Clock className="w-3.5 h-3.5" /> Waitlist
+            <Clock className="w-3.5 h-3.5" /> Standby
           </Button>
           <Button size="sm" variant="ghost" onClick={onDecline} disabled={app.status === "declined"}>
-            <XIcon className="w-3.5 h-3.5" /> Decline
+            <XIcon className="w-3.5 h-3.5" /> Remove
           </Button>
         </div>
       </div>
@@ -532,7 +533,7 @@ function StatusChip({ status }: { status: ApplicationStatus }) {
     <span
       className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full ${styles[status]}`}
     >
-      {status}
+      {STATUS_LABELS[status]}
     </span>
   );
 }
