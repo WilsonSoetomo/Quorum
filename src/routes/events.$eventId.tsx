@@ -28,6 +28,27 @@ import {
   Mail,
 } from "lucide-react";
 
+async function getFunctionErrorMessage(error: any): Promise<string> {
+  // Supabase wraps non-2xx edge responses in FunctionsHttpError.
+  // Try to parse the function body so users see the real reason.
+  const fallback = error?.message || "Smart Sort failed";
+  const response = error?.context;
+  if (!response || typeof response.clone !== "function") return fallback;
+  try {
+    const cloned = response.clone();
+    const payload = await cloned.json();
+    if (typeof payload?.error === "string" && payload.error.trim().length > 0) {
+      return payload.error;
+    }
+    if (typeof payload?.message === "string" && payload.message.trim().length > 0) {
+      return payload.message;
+    }
+  } catch {
+    // Non-JSON body; keep fallback.
+  }
+  return fallback;
+}
+
 export const Route = createFileRoute("/events/$eventId")({
   component: () => (
     <RequireAuth>
@@ -236,7 +257,7 @@ function EventDetail() {
       toast.success(`Sorted ${data?.scored ?? 0} entries.`);
       await loadApps();
     } catch (e: any) {
-      toast.error(e?.message || "Smart Sort failed");
+      toast.error(await getFunctionErrorMessage(e));
     } finally {
       setScoring(false);
     }
