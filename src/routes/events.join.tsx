@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
 import { RequireAuth } from "@/components/require-auth";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +12,12 @@ import { formatEventDate } from "@/lib/event-utils";
 import { toast } from "sonner";
 import { Calendar, MapPin } from "lucide-react";
 
+const joinSearchSchema = z.object({
+  code: z.string().optional(),
+});
+
 export const Route = createFileRoute("/events/join")({
+  validateSearch: joinSearchSchema,
   component: () => (
     <RequireAuth>
       <JoinEventPage />
