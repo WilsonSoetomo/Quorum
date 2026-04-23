@@ -14,7 +14,140 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          ai_reasoning: string | null
+          ai_score: number | null
+          applicant_id: string
+          applied_at: string
+          event_id: string
+          id: string
+          reviewed_at: string | null
+          status: string
+        }
+        Insert: {
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          applicant_id: string
+          applied_at?: string
+          event_id: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Update: {
+          ai_reasoning?: string | null
+          ai_score?: number | null
+          applicant_id?: string
+          applied_at?: string
+          event_id?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          date: string
+          description: string
+          host_id: string
+          id: string
+          is_private: boolean
+          join_code: string
+          location: string
+          name: string
+          status: string
+          total_spots: number
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          description?: string
+          host_id: string
+          id?: string
+          is_private?: boolean
+          join_code: string
+          location: string
+          name: string
+          status?: string
+          total_spots: number
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          description?: string
+          host_id?: string
+          id?: string
+          is_private?: boolean
+          join_code?: string
+          location?: string
+          name?: string
+          status?: string
+          total_spots?: number
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_host_id_fkey"
+            columns: ["host_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          bio: string
+          created_at: string
+          full_name: string
+          id: string
+          tags: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bio?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          tags?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bio?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          tags?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
