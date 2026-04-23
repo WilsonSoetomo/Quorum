@@ -83,32 +83,32 @@ Deno.serve(async (req) => {
     const status = app.status as string;
 
     if (status === "approved") {
-      subject = `You're in — ${eventName}`;
+      subject = `You're confirmed — ${eventName}`;
       bodyHtml = `
         <div style="font-family: 'DM Sans', Arial, sans-serif; background: #FAF9F6; padding: 40px 20px; color: #1a1a1a;">
           <div style="max-width: 560px; margin: 0 auto; background: #fff; border: 1px solid #eee; padding: 40px;">
-            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Prio</p>
-            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">You're in.</h1>
+            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Quorum</p>
+            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">You're confirmed.</h1>
             <p style="font-size: 16px; line-height: 1.6;">Hi ${escapeHtml(applicantName)},</p>
-            <p style="font-size: 16px; line-height: 1.6;">Good news — you've been approved for <strong>${escapeHtml(eventName)}</strong>.</p>
+            <p style="font-size: 16px; line-height: 1.6;">Your spot for <strong>${escapeHtml(eventName)}</strong> is confirmed.</p>
             <div style="margin: 24px 0; padding: 16px 20px; background: #FAF9F6; border-left: 3px solid #C8A84B;">
               <p style="margin: 0 0 6px; font-size: 14px;"><strong>When:</strong> ${escapeHtml(eventDate)}</p>
               <p style="margin: 0; font-size: 14px;"><strong>Where:</strong> ${escapeHtml(eventLocation)}</p>
             </div>
             <p style="font-size: 14px; color: #555;">See you there.</p>
-            <p style="font-size: 12px; color: #999; margin-top: 32px;">— The Prio team</p>
+            <p style="font-size: 12px; color: #999; margin-top: 32px;">— Quorum</p>
           </div>
         </div>`;
     } else if (status === "waitlisted") {
-      subject = `You're on the waitlist — ${eventName}`;
+      subject = `You're on standby — ${eventName}`;
       bodyHtml = `
         <div style="font-family: 'DM Sans', Arial, sans-serif; background: #FAF9F6; padding: 40px 20px; color: #1a1a1a;">
           <div style="max-width: 560px; margin: 0 auto; background: #fff; border: 1px solid #eee; padding: 40px;">
-            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Prio</p>
-            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">On the waitlist</h1>
+            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Quorum</p>
+            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">On standby</h1>
             <p style="font-size: 16px; line-height: 1.6;">Hi ${escapeHtml(applicantName)},</p>
-            <p style="font-size: 16px; line-height: 1.6;">You're on the waitlist for <strong>${escapeHtml(eventName)}</strong>. If a spot opens up, you'll be the first to know.</p>
-            <p style="font-size: 12px; color: #999; margin-top: 32px;">— The Prio team</p>
+            <p style="font-size: 16px; line-height: 1.6;">You're on standby for <strong>${escapeHtml(eventName)}</strong>. We'll let you know if a spot opens up.</p>
+            <p style="font-size: 12px; color: #999; margin-top: 32px;">— Quorum</p>
           </div>
         </div>`;
     } else if (status === "declined") {
@@ -116,15 +116,15 @@ Deno.serve(async (req) => {
       bodyHtml = `
         <div style="font-family: 'DM Sans', Arial, sans-serif; background: #FAF9F6; padding: 40px 20px; color: #1a1a1a;">
           <div style="max-width: 560px; margin: 0 auto; background: #fff; border: 1px solid #eee; padding: 40px;">
-            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Prio</p>
-            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">Thanks for applying</h1>
+            <p style="color: #C8A84B; letter-spacing: 0.2em; font-size: 11px; text-transform: uppercase; margin: 0 0 12px;">Quorum</p>
+            <h1 style="font-family: Georgia, serif; font-size: 28px; margin: 0 0 16px;">List update</h1>
             <p style="font-size: 16px; line-height: 1.6;">Hi ${escapeHtml(applicantName)},</p>
-            <p style="font-size: 16px; line-height: 1.6;">Unfortunately you weren't selected for <strong>${escapeHtml(eventName)}</strong> this time. We hope to see you at a future Prio event.</p>
-            <p style="font-size: 12px; color: #999; margin-top: 32px;">— The Prio team</p>
+            <p style="font-size: 16px; line-height: 1.6;">A quick note that the list for <strong>${escapeHtml(eventName)}</strong> has been finalized and your spot wasn't included this time. Thanks for signing up.</p>
+            <p style="font-size: 12px; color: #999; margin-top: 32px;">— Quorum</p>
           </div>
         </div>`;
     } else {
-      return json({ error: "Cannot notify pending applications" }, 400);
+      return json({ error: "Cannot notify pending entries" }, 400);
     }
 
     const resendRes = await fetch("https://api.resend.com/emails", {
@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Prio <onboarding@resend.dev>",
+        from: "Quorum <onboarding@resend.dev>",
         to: [toEmail],
         subject,
         html: bodyHtml,
