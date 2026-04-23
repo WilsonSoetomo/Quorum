@@ -149,6 +149,12 @@ function EventDetail() {
     toast.success("Code copied");
   };
 
+  const copyLink = () => {
+    const url = `${window.location.origin}/j/${event.join_code}`;
+    navigator.clipboard.writeText(url);
+    toast.success("Share link copied");
+  };
+
   const updateStatus = async (
     appId: string,
     next: ApplicationStatus,
