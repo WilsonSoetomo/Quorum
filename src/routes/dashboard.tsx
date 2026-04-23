@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatEventDate, statusColor, ApplicationStatus } from "@/lib/event-utils";
+import { formatEventDate, statusColor, STATUS_LABELS, ApplicationStatus } from "@/lib/event-utils";
 import { Plus, KeyRound, Calendar, MapPin } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
@@ -182,7 +182,7 @@ function Dashboard() {
                     a.status,
                   )}`}
                 >
-                  {a.status}
+                  {STATUS_LABELS[a.status]}
                 </span>
               </Card>
             ))}
