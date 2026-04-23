@@ -19,6 +19,7 @@ import {
   Calendar,
   MapPin,
   Copy,
+  Link2,
   Sparkles,
   Check,
   Clock,
