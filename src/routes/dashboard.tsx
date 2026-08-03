@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatEventDate, statusColor, STATUS_LABELS, ApplicationStatus } from "@/lib/event-utils";
-import { Plus, KeyRound, Calendar, MapPin } from "lucide-react";
+import { Plus, KeyRound, Calendar, MapPin, CalendarDays } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/dashboard")({
   component: () => (
@@ -41,10 +42,20 @@ type AppliedEvent = {
   } | null;
 };
 
+type JoinedHistoryItem = {
+  id: string;
+  status: ApplicationStatus;
+  archived_at: string;
+  event_name: string;
+  event_date: string | null;
+  event_location: string;
+};
+
 function Dashboard() {
   const { profile } = useAuth();
   const [hosted, setHosted] = useState<HostedEvent[]>([]);
   const [applied, setApplied] = useState<AppliedEvent[]>([]);
+  const [history, setHistory] = useState<JoinedHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -87,23 +98,76 @@ function Dashboard() {
       .eq("applicant_id", profile.id)
       .order("applied_at", { ascending: false });
 
+    const { data: historyRows } = await supabase
+      .from("joined_event_history")
+      .select("id, status, archived_at, event_name, event_date, event_location")
+      .eq("applicant_id", profile.id)
+      .order("archived_at", { ascending: false });
+
     setApplied((apps ?? []) as AppliedEvent[]);
+    setHistory((historyRows ?? []) as JoinedHistoryItem[]);
     setLoading(false);
   };
 
+  const archiveApplication = async (applicationId: string) => {
+    const { error } = await supabase.rpc("archive_my_application", {
+      p_application_id: applicationId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Moved to history.");
+    await loadAll();
+  };
+
+  const deleteHistory = async (applicationId: string) => {
+    const confirmed = window.confirm("Delete this item from your history?");
+    if (!confirmed) return;
+    const { error } = await supabase.rpc("delete_my_history_item", {
+      p_history_id: applicationId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Removed from history.");
+    await loadAll();
+  };
+
+  const restoreHistory = async (historyId: string) => {
+    const { error } = await supabase.rpc("restore_my_history_item", {
+      p_history_id: historyId,
+    });
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Moved back to active joined lists.");
+    await loadAll();
+  };
+
   return (
-    <main className="max-w-6xl mx-auto px-6 py-10">
-      <div className="mb-10">
+    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="mb-8 sm:mb-10 flex flex-wrap items-start justify-between gap-3">
+        <div>
         <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">
           Welcome back{profile?.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
         </p>
-        <h1 className="font-serif text-4xl">Your lists</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl">Your lists</h1>
+        </div>
+        <Link to="/calendar">
+          <Button variant="outline" className="w-full sm:w-auto">
+            <CalendarDays className="w-4 h-4" />
+            Calendar
+          </Button>
+        </Link>
       </div>
 
       {/* Two paths */}
-      <div className="grid md:grid-cols-2 gap-4 mb-12">
+      <div className="grid md:grid-cols-2 gap-4 mb-10 sm:mb-12">
         <Link to="/events/new" className="group">
-          <Card className="p-8 h-full bg-gradient-noir text-primary-foreground shadow-elegant hover:shadow-gold transition-shadow">
+          <Card className="p-6 sm:p-8 h-full bg-gradient-noir text-primary-foreground shadow-elegant hover:shadow-gold transition-shadow">
             <Plus className="w-8 h-8 text-gold mb-4" />
             <h2 className="font-serif text-2xl mb-2">Start a list</h2>
             <p className="text-sm opacity-80">
@@ -112,7 +176,7 @@ function Dashboard() {
           </Card>
         </Link>
         <Link to="/events/join" className="group">
-          <Card className="p-8 h-full hover:border-gold transition-colors shadow-elegant">
+          <Card className="p-6 sm:p-8 h-full hover:border-gold transition-colors shadow-elegant">
             <KeyRound className="w-8 h-8 text-gold mb-4" />
             <h2 className="font-serif text-2xl mb-2">Join a list</h2>
             <p className="text-sm text-muted-foreground">
@@ -169,7 +233,7 @@ function Dashboard() {
         {applied.length > 0 && (
           <div className="space-y-2">
             {applied.map((a) => (
-              <Card key={a.id} className="p-4 flex items-center justify-between">
+              <Card key={a.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-serif text-lg">{a.events?.name ?? "Event"}</h3>
                   <p className="text-xs text-muted-foreground">
@@ -177,13 +241,61 @@ function Dashboard() {
                     {a.events?.location && ` · ${a.events.location}`}
                   </p>
                 </div>
-                <span
-                  className={`text-xs px-3 py-1 rounded-full border uppercase tracking-wider ${statusColor(
-                    a.status,
-                  )}`}
-                >
-                  {STATUS_LABELS[a.status]}
-                </span>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full border uppercase tracking-wider ${statusColor(
+                      a.status,
+                    )}`}
+                  >
+                    {STATUS_LABELS[a.status]}
+                  </span>
+                  <Button size="sm" variant="outline" onClick={() => archiveApplication(a.id)} className="w-full sm:w-auto">
+                    Archive
+                  </Button>
+                </div>
+              </Card>
+            ))}
+          </div>
+        )}
+      </Section>
+
+      <Section title="Joined history" empty="No archived joined lists yet.">
+        {history.length > 0 && (
+          <div className="space-y-2">
+            {history.map((a) => (
+              <Card key={a.id} className="p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <h3 className="font-serif text-lg">{a.event_name}</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {a.event_date && formatEventDate(a.event_date)}
+                    {a.event_location && ` · ${a.event_location}`}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <span
+                    className={`text-xs px-3 py-1 rounded-full border uppercase tracking-wider ${statusColor(
+                      a.status,
+                    )}`}
+                  >
+                    {STATUS_LABELS[a.status]}
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => restoreHistory(a.id)}
+                    className="w-full sm:w-auto"
+                  >
+                    Undo archive
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => deleteHistory(a.id)}
+                    className="w-full sm:w-auto"
+                  >
+                    Delete
+                  </Button>
+                </div>
               </Card>
             ))}
           </div>

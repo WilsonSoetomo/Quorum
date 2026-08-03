@@ -8,11 +8,22 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   formatEventDate,
   scoreColor,
   STATUS_LABELS,
   ApplicationStatus,
+  EVENT_TYPES,
 } from "@/lib/event-utils";
 import { toast } from "sonner";
 import {
@@ -26,6 +37,8 @@ import {
   X as XIcon,
   ArrowLeft,
   Mail,
+  Trash2,
+  UserPlus,
 } from "lucide-react";
 
 async function getFunctionErrorMessage(error: any): Promise<string> {
@@ -49,6 +62,12 @@ async function getFunctionErrorMessage(error: any): Promise<string> {
   return fallback;
 }
 
+function toDateTimeLocalValue(iso: string) {
+  const date = new Date(iso);
+  const tzOffset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+}
+
 export const Route = createFileRoute("/events/$eventId")({
   component: () => (
     <RequireAuth>
@@ -67,7 +86,6 @@ type EventRow = {
   total_spots: number;
   join_code: string;
   status: "open" | "closed";
-  is_private: boolean;
   host_id: string;
 };
 
@@ -94,6 +112,14 @@ function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [scoring, setScoring] = useState(false);
   const [tab, setTab] = useState<"all" | "approved" | "waitlist">("all");
+  const [editing, setEditing] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editType, setEditType] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [editTotalSpots, setEditTotalSpots] = useState(1);
+  const [editDescription, setEditDescription] = useState("");
 
   const isHost = !!event && !!profile && event.host_id === profile.id;
 
@@ -165,6 +191,9 @@ function EventDetail() {
   const waitlistCount = apps.filter((a) => a.status === "waitlisted").length;
   const spotsLeft = Math.max(0, event.total_spots - approvedCount);
   const eventFull = approvedCount >= event.total_spots;
+  const hostApplication = profile
+    ? apps.find((a) => a.applicant?.id === profile.id)
+    : null;
 
   const copyCode = () => {
     navigator.clipboard.writeText(event.join_code);
@@ -314,6 +343,93 @@ function EventDetail() {
     else toast.success(`List ${next}`);
   };
 
+  const deleteEvent = async () => {
+    if (!isHost) return;
+    const confirmed = window.confirm(
+      "Delete this event and all applications? This action cannot be undone.",
+    );
+    if (!confirmed) return;
+    const { error } = await supabase.from("events").delete().eq("id", eventId);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Event deleted.");
+    navigate({ to: "/dashboard" });
+  };
+
+  const addSelfToList = async () => {
+    if (!isHost || !profile) return;
+    if (hostApplication) {
+      toast.info("You're already on this list.");
+      return;
+    }
+
+    const { error } = await supabase.from("applications").insert({
+      event_id: eventId,
+      applicant_id: profile.id,
+      status: "approved",
+    });
+
+    if (error) {
+      if (error.message.toLowerCase().includes("duplicate")) {
+        toast.info("You're already on this list.");
+      } else {
+        toast.error(error.message);
+      }
+      return;
+    }
+
+    toast.success("You're now added to your list.");
+    await loadApps();
+  };
+
+  const beginEdit = () => {
+    setEditName(event.name);
+    setEditType(event.type);
+    setEditDate(toDateTimeLocalValue(event.date));
+    setEditLocation(event.location);
+    setEditTotalSpots(event.total_spots);
+    setEditDescription(event.description ?? "");
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+  };
+
+  const saveEdit = async () => {
+    if (!isHost) return;
+    if (!editName.trim() || !editType.trim() || !editDate || !editLocation.trim()) {
+      toast.error("Please fill out all required fields.");
+      return;
+    }
+    if (editTotalSpots < approvedCount) {
+      toast.error(`Total spots cannot be lower than confirmed count (${approvedCount}).`);
+      return;
+    }
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from("events")
+      .update({
+        name: editName.trim(),
+        type: editType,
+        date: new Date(editDate).toISOString(),
+        location: editLocation.trim(),
+        total_spots: editTotalSpots,
+        description: editDescription.trim(),
+      })
+      .eq("id", eventId);
+    setSavingEdit(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setEditing(false);
+    toast.success("Event updated.");
+    await loadEvent();
+  };
+
   const visible =
     tab === "approved"
       ? apps.filter((a) => a.status === "approved")
@@ -322,7 +438,7 @@ function EventDetail() {
         : apps;
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-10">
+    <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <Link
         to="/dashboard"
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-6"
@@ -331,18 +447,13 @@ function EventDetail() {
       </Link>
 
       {/* Event header */}
-      <Card className="p-8 mb-8 shadow-elegant">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <Card className="p-5 sm:p-8 mb-6 sm:mb-8 shadow-elegant">
+        <div className="flex flex-col sm:flex-row sm:flex-wrap items-start justify-between gap-4">
           <div className="flex-1 min-w-[260px]">
             <div className="flex items-center gap-2 mb-3">
               <Badge variant="outline" className="text-[10px] uppercase tracking-wider">
                 {event.type}
               </Badge>
-              {event.is_private && (
-                <Badge variant="secondary" className="text-[10px] uppercase">
-                  Private
-                </Badge>
-              )}
               <Badge
                 variant={event.status === "open" ? "default" : "secondary"}
                 className="text-[10px] uppercase"
@@ -350,7 +461,7 @@ function EventDetail() {
                 {event.status}
               </Badge>
             </div>
-            <h1 className="font-serif text-4xl mb-3">{event.name}</h1>
+            <h1 className="font-serif text-3xl sm:text-4xl mb-3">{event.name}</h1>
             <div className="space-y-1 text-sm text-muted-foreground">
               <p className="flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5" />
@@ -369,14 +480,14 @@ function EventDetail() {
           </div>
 
           {/* Right side: code + counter + toggle */}
-          <div className="flex flex-col items-end gap-3">
-            <div className="text-right">
+          <div className="w-full sm:w-auto flex flex-col sm:items-end gap-3">
+            <div className="text-left sm:text-right">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
                 Join code
               </p>
               <button
                 onClick={copyCode}
-                className="font-mono text-2xl text-gold tracking-[0.25em] flex items-center gap-2 hover:opacity-80"
+                className="font-mono text-xl sm:text-2xl text-gold tracking-[0.18em] sm:tracking-[0.25em] flex items-center gap-2 hover:opacity-80"
                 title="Click to copy code"
               >
                 {event.join_code}
@@ -391,7 +502,7 @@ function EventDetail() {
                 Copy share link
               </button>
             </div>
-            <div className="text-right">
+            <div className="text-left sm:text-right">
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
                 Confirmed
               </p>
@@ -410,9 +521,109 @@ function EventDetail() {
                 <span className="text-xs text-muted-foreground">Open</span>
               </div>
             )}
+            {isHost && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 w-full sm:w-auto"
+                onClick={beginEdit}
+              >
+                Edit event
+              </Button>
+            )}
+            {isHost && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="mt-2 w-full sm:w-auto"
+                onClick={deleteEvent}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Delete event
+              </Button>
+            )}
           </div>
         </div>
       </Card>
+
+      {isHost && editing && (
+        <Card className="p-5 sm:p-6 mb-6 sm:mb-8 shadow-elegant">
+          <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">Edit list</p>
+          <h2 className="font-serif text-2xl mb-6">Update event details</h2>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-name">List name</Label>
+              <Input
+                id="edit-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-type">Type</Label>
+                <Select value={editType} onValueChange={setEditType}>
+                  <SelectTrigger id="edit-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {EVENT_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="edit-date">Date & time</Label>
+                <Input
+                  id="edit-date"
+                  type="datetime-local"
+                  value={editDate}
+                  onChange={(e) => setEditDate(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="edit-location">Location</Label>
+              <Input
+                id="edit-location"
+                value={editLocation}
+                onChange={(e) => setEditLocation(e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-spots">Total spots</Label>
+              <Input
+                id="edit-spots"
+                type="number"
+                min={approvedCount}
+                max={500}
+                value={editTotalSpots}
+                onChange={(e) => setEditTotalSpots(Number(e.target.value))}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-description">Notes</Label>
+              <Textarea
+                id="edit-description"
+                rows={4}
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="gold" onClick={saveEdit} disabled={savingEdit}>
+                {savingEdit ? "Saving…" : "Save changes"}
+              </Button>
+              <Button variant="outline" onClick={cancelEdit} disabled={savingEdit}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {!isHost && (
         <Card className="p-6 mb-8 bg-secondary/40 border-dashed">
@@ -425,11 +636,12 @@ function EventDetail() {
       {isHost && (
         <>
           {/* Action bar */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
             <Button
               onClick={runAiScoring}
               variant="gold"
               disabled={scoring || apps.length === 0}
+              className="w-full"
             >
               <Sparkles className="w-4 h-4" />
               {scoring ? "Sorting…" : "Smart Sort"}
@@ -438,18 +650,28 @@ function EventDetail() {
               onClick={approveTopN}
               variant="noir"
               disabled={spotsLeft === 0 || apps.length === 0}
+              className="w-full"
             >
               Confirm next {Math.min(spotsLeft, apps.filter((a) => a.status !== "approved" && a.status !== "declined").length)}
             </Button>
-            <Button onClick={notifyAllApproved} variant="outline">
+            <Button onClick={notifyAllApproved} variant="outline" className="w-full">
               <Mail className="w-4 h-4" />
               Notify confirmed
+            </Button>
+            <Button
+              onClick={addSelfToList}
+              variant="outline"
+              className="w-full"
+              disabled={!!hostApplication}
+            >
+              <UserPlus className="w-4 h-4" />
+              {hostApplication ? "Already on list" : "Add me to list"}
             </Button>
           </div>
 
           {/* Tabs */}
           <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-            <TabsList>
+            <TabsList className="w-full overflow-x-auto justify-start">
               <TabsTrigger value="all">Everyone ({apps.length})</TabsTrigger>
               <TabsTrigger value="approved">Confirmed ({approvedCount})</TabsTrigger>
               <TabsTrigger value="waitlist">Standby ({waitlistCount})</TabsTrigger>
@@ -492,7 +714,7 @@ function ApplicantCard({
   onDecline: () => void;
 }) {
   return (
-    <Card className="p-5 shadow-elegant">
+    <Card className="p-4 sm:p-5 shadow-elegant">
       <div className="flex flex-wrap gap-4 items-start">
         <div className="flex-1 min-w-[220px]">
           <div className="flex items-center gap-2 mb-1">
@@ -525,7 +747,7 @@ function ApplicantCard({
 
         {/* Score */}
         {app.ai_score != null && (
-          <div className="w-32">
+          <div className="w-full sm:w-32">
             <div className="flex items-baseline justify-between mb-1">
               <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
                 Priority
@@ -542,14 +764,14 @@ function ApplicantCard({
         )}
 
         {/* Actions */}
-        <div className="flex flex-col gap-1.5">
-          <Button size="sm" variant="gold" onClick={onApprove} disabled={app.status === "approved"}>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 w-full sm:w-auto">
+          <Button size="sm" variant="gold" onClick={onApprove} disabled={app.status === "approved"} className="w-full">
             <Check className="w-3.5 h-3.5" /> Confirm
           </Button>
-          <Button size="sm" variant="outline" onClick={onWaitlist} disabled={app.status === "waitlisted"}>
+          <Button size="sm" variant="outline" onClick={onWaitlist} disabled={app.status === "waitlisted"} className="w-full">
             <Clock className="w-3.5 h-3.5" /> Standby
           </Button>
-          <Button size="sm" variant="ghost" onClick={onDecline} disabled={app.status === "declined"}>
+          <Button size="sm" variant="ghost" onClick={onDecline} disabled={app.status === "declined"} className="w-full">
             <XIcon className="w-3.5 h-3.5" /> Remove
           </Button>
         </div>

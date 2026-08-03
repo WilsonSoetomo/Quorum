@@ -13,7 +13,6 @@ const corsHeaders = {
 
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 Deno.serve(async (req) => {
@@ -35,25 +34,37 @@ Deno.serve(async (req) => {
     if (!authHeader.startsWith("Bearer ")) {
       return json({ error: "Unauthorized" }, 401);
     }
+    const accessToken = authHeader.replace("Bearer ", "").trim();
+    if (!accessToken) return json({ error: "Unauthorized" }, 401);
 
-    // User-context client (RLS applies)
-    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      return json({ error: "SUPABASE_SERVICE_ROLE_KEY is not configured" }, 500);
+    }
 
-    const { data: { user }, error: userErr } = await supabase.auth.getUser();
+    // Admin client avoids JWT algorithm incompatibilities in PostgREST while
+    // we still verify caller identity from the provided access token.
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: { user }, error: userErr } = await supabase.auth.getUser(accessToken);
     if (userErr || !user) return json({ error: "Unauthorized" }, 401);
+
+    const { data: profile, error: profileErr } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (profileErr || !profile) return json({ error: "Host profile not found" }, 403);
 
     // Load event + verify caller is host
     const { data: event, error: evErr } = await supabase
       .from("events")
-      .select("id, name, type, description, host_id, profiles!events_host_id_fkey(user_id)")
+      .select("id, name, type, description, host_id")
       .eq("id", eventId)
       .maybeSingle();
 
     if (evErr || !event) return json({ error: "Event not found" }, 404);
-    // @ts-ignore nested
-    if (event.profiles?.user_id !== user.id) {
+    if (event.host_id !== profile.id) {
       return json({ error: "Only the host can score applicants" }, 403);
     }
 
@@ -133,8 +144,6 @@ Return JSON with this exact shape, scoring every applicant by their id:
       return json({ error: "AI returned malformed JSON" }, 502);
     }
 
-    // Apply scores using service-role client (bypass RLS for batch update)
-    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const validIds = new Set(applications.map((a: any) => a.id));
     let scored = 0;
 
@@ -142,7 +151,7 @@ Return JSON with this exact shape, scoring every applicant by their id:
       if (!validIds.has(s.id)) continue;
       const score = Math.max(0, Math.min(100, Math.round(Number(s.score) || 0)));
       const reasoning = String(s.reasoning || "").slice(0, 500);
-      const { error: updErr } = await adminClient
+      const { error: updErr } = await supabase
         .from("applications")
         .update({ ai_score: score, ai_reasoning: reasoning })
         .eq("id", s.id);

@@ -118,6 +118,56 @@ export type Database = {
           },
         ]
       }
+      joined_event_history: {
+        Row: {
+          applicant_id: string
+          archived_at: string
+          event_date: string | null
+          event_id: string | null
+          event_location: string
+          event_name: string
+          event_type: string
+          id: string
+          original_applied_at: string | null
+          source_application_id: string | null
+          status: string
+        }
+        Insert: {
+          applicant_id: string
+          archived_at?: string
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string
+          event_name: string
+          event_type?: string
+          id?: string
+          original_applied_at?: string | null
+          source_application_id?: string | null
+          status: string
+        }
+        Update: {
+          applicant_id?: string
+          archived_at?: string
+          event_date?: string | null
+          event_id?: string | null
+          event_location?: string
+          event_name?: string
+          event_type?: string
+          id?: string
+          original_applied_at?: string | null
+          source_application_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "joined_event_history_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           bio: string
@@ -153,7 +203,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      archive_my_application: {
+        Args: { p_application_id: string }
+        Returns: undefined
+      }
+      delete_my_history_item: {
+        Args: { p_history_id: string }
+        Returns: undefined
+      }
+      restore_my_history_item: {
+        Args: { p_history_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

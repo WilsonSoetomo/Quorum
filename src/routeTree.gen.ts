@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as JCodeRouteImport } from './routes/j.$code'
@@ -26,6 +27,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -62,6 +68,7 @@ const EventsEventIdRoute = EventsEventIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/profile': typeof ProfileRoute
   '/events/$eventId': typeof EventsEventIdRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/calendar'
     | '/dashboard'
     | '/profile'
     | '/events/$eventId'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/calendar'
     | '/dashboard'
     | '/profile'
     | '/events/$eventId'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/calendar'
     | '/dashboard'
     | '/profile'
     | '/events/$eventId'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  CalendarRoute: typeof CalendarRoute
   DashboardRoute: typeof DashboardRoute
   ProfileRoute: typeof ProfileRoute
   EventsEventIdRoute: typeof EventsEventIdRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  CalendarRoute: CalendarRoute,
   DashboardRoute: DashboardRoute,
   ProfileRoute: ProfileRoute,
   EventsEventIdRoute: EventsEventIdRoute,

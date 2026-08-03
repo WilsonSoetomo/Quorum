@@ -89,7 +89,6 @@ function JoinEventPage() {
       autoLookupDone.current = true;
       lookup(search.code);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.code]);
 
   const handleApply = async () => {
@@ -114,11 +113,11 @@ function JoinEventPage() {
   };
 
   return (
-    <main className="max-w-xl mx-auto px-6 py-10">
+    <main className="max-w-xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">Join a list</p>
-      <h1 className="font-serif text-4xl mb-8">Enter your code</h1>
+      <h1 className="font-serif text-3xl sm:text-4xl mb-6 sm:mb-8">Enter your code</h1>
 
-      <Card className="p-8 shadow-elegant">
+      <Card className="p-5 sm:p-8 shadow-elegant">
         <form onSubmit={handleLookup} className="space-y-4">
           <div>
             <Label htmlFor="code">Six-character code</Label>
@@ -128,7 +127,7 @@ function JoinEventPage() {
               onChange={(e) => setCode(e.target.value.toUpperCase())}
               maxLength={6}
               placeholder="ABC123"
-              className="font-mono text-2xl tracking-[0.4em] text-center uppercase h-14"
+              className="font-mono text-xl sm:text-2xl tracking-[0.25em] sm:tracking-[0.4em] text-center uppercase h-12 sm:h-14"
             />
           </div>
           <Button type="submit" variant="noir" className="w-full" disabled={busy}>
@@ -141,7 +140,7 @@ function JoinEventPage() {
             <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
               {event.type}
             </p>
-            <h2 className="font-serif text-2xl mb-3">{event.name}</h2>
+            <h2 className="font-serif text-xl sm:text-2xl mb-3 leading-tight">{event.name}</h2>
             <div className="space-y-1.5 text-sm text-muted-foreground mb-4">
               <p className="flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5" />

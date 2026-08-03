@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -36,7 +35,6 @@ function NewEventPage() {
   const [location, setLocation] = useState("");
   const [totalSpots, setTotalSpots] = useState(8);
   const [description, setDescription] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -57,7 +55,7 @@ function NewEventPage() {
           location,
           total_spots: totalSpots,
           description,
-          is_private: isPrivate,
+          is_private: false,
           join_code: joinCode,
           status: "open",
         })
@@ -80,11 +78,11 @@ function NewEventPage() {
   };
 
   return (
-    <main className="max-w-2xl mx-auto px-6 py-10">
+    <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <p className="text-gold tracking-[0.25em] text-[10px] uppercase mb-2">New list</p>
-      <h1 className="font-serif text-4xl mb-8">The details</h1>
+      <h1 className="font-serif text-3xl sm:text-4xl mb-6 sm:mb-8">The details</h1>
 
-      <Card className="p-8 shadow-elegant">
+      <Card className="p-5 sm:p-8 shadow-elegant">
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <Label htmlFor="name">List name</Label>
@@ -161,16 +159,6 @@ function NewEventPage() {
             <p className="text-xs text-muted-foreground mt-1.5">
               Used to help Smart Sort prioritize your queue.
             </p>
-          </div>
-
-          <div className="flex items-center justify-between rounded-md border border-border p-4">
-            <div>
-              <p className="font-medium text-sm">Private list</p>
-              <p className="text-xs text-muted-foreground">
-                Hide from public view — only joinable with the code.
-              </p>
-            </div>
-            <Switch checked={isPrivate} onCheckedChange={setIsPrivate} />
           </div>
 
           <Button type="submit" variant="gold" className="w-full" disabled={busy} size="lg">
